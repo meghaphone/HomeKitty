@@ -12,11 +12,11 @@ final class ContributeController {
     func addRoutes(droplet: Droplet) {
         self.droplet = droplet
         let group = droplet.grouped("contribute")
-        group.get(handler: explore)
+        group.get(handler: contribute)
         group.post("submit", handler: submit)
     }
 
-    func explore(request: Request) throws -> ResponseRepresentable {
+    func contribute(request: Request) throws -> ResponseRepresentable {
         let manufacturers = try Manufacturer.makeQuery().filter("approved", true).all().sorted(by: { $0.name.localizedCompare($1.name) == .orderedAscending })
         let categories = try Category.all().sorted(by: {  $0.name.localizedCompare($1.name) == .orderedAscending })
         let node = try Node(node: [
