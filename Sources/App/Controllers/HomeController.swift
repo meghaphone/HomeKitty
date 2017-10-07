@@ -31,20 +31,20 @@ final class HomeController {
         // Get limited amout of accessoires sorted by date
         accessories = try Accessory.makeQuery().filter("approved", true).sort("date", .descending).limit(visibleAccessoriesLimit).all()
 
+        // Creates a time ago string from the date of each accessory and stores it in a new array
+        accessoriesDateString = accessories.map { $0.date.timeAgoSinceDate() }
+
         // Get featured accessory from item id
         //let featuredAccessoryId = 26
         // Path to the banner image of the featured image
         //featuredAccessoryImage = "/images/featured-item.png"
-        
+
         // Fetch featured accessory
-//        featuredAccessory = try Accessory.makeQuery().filter("id", featuredAccessoryId).first()!
-        
+        // featuredAccessory = try Accessory.makeQuery().filter("id", featuredAccessoryId).first()!
+
         // Creates a time ago string from the date of each accessory and stores it in a new array
         accessoriesDateString = accessories.map { $0.date.timeAgoString() }
-        
-        
-        print(accessoriesDateString[0])
-        
+
         let nodes = try Node(node: [
             "categories": categories.makeNode(in: nil),
             "accessories": accessories.makeNode(in: nil),
