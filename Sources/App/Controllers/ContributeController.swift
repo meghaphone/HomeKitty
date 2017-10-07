@@ -17,11 +17,23 @@ final class ContributeController {
     }
 
     func explore(request: Request) throws -> ResponseRepresentable {
-        let manufacturers = try Manufacturer.makeQuery().filter("approved", true).all().sorted(by: { $0.name.localizedCompare($1.name) == .orderedAscending })
-        let categories = try Category.all().sorted(by: {  $0.name.localizedCompare($1.name) == .orderedAscending })
+        let manufacturers = try Manufacturer.makeQuery()
+            .filter("approved", true)
+            .all()
+            .sorted(by: { $0.name.localizedCompare($1.name) == .orderedAscending })
+
+        let categories = try Category.all()
+            .sorted(by: { $0.name.localizedCompare($1.name) == .orderedAscending })
+
+        let bridges = try Category.makeQuery()
+            .filter("name", "Bridges")
+            .first()?.accessories
+            .all()
+
         let node = try Node(node: [
             "categories": categories.makeNode(in: nil),
-            "manufacturers": manufacturers.makeNode(in: nil)
+            "manufacturers": manufacturers.makeNode(in: nil),
+            "bridges": bridges.makeNode(in: nil)
         ])
         return try droplet.view.make("contribute", node)
     }
@@ -48,7 +60,9 @@ final class ContributeController {
             let categoryName = request.formURLEncoded?["category"]?.string,
             let manufacturerId = manufacturerId {
                 let released = request.formURLEncoded?["released"]?.bool ?? false
-                let requiresHub = request.formURLEncoded?["requireshub"]?.bool ?? false
+                let requiresHub = request.formURLEncoded?["requires_hub"]?.bool ?? false
+                let requiredBridgeName = request.formURLEncoded?["required_bridge"]?.string
+                let bridge = try Accessory.makeQuery().filter("name", requiredBridgeName).first()
                 if let category = try Category.makeQuery().filter("name", categoryName).first() {
                     let accessory = Accessory(
                         name: name,
@@ -59,7 +73,7 @@ final class ContributeController {
                         manufacturerId: manufacturerId,
                         released: released,
                         requiresHub: requiresHub,
-                        requiredHubId: nil
+                        requiredHubId: bridge?.id
                     )
                     try accessory.save()
                 }
